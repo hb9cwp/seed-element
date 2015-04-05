@@ -1,0 +1,27 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<polymer-element name="si2-speed" attributes="speed webClients author">
+
+  <template>
+
+    <link rel="stylesheet" href="si2-speed.css">
+
+    <h2>Hello from speed</h2>
+    <p>Air speed is <strong>{{speed}}</strong> kts</p>
+    <strong>{{webClients}}</strong> Web clients are connected.
+    
+    <content></content>
+
+  </template>
+
+  <script>
+
+    Polymer({
+      author: 'Rolf Sommerhalder',
+      speed: 0,
+      webClients: 0,
+    });
+
+  </script>
+
+</polymer-element>
