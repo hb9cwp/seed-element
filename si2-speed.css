@@ -8,3 +8,26 @@ polyfill-next-selector { content: ':host > h2'; }
 ::content h2 {
   color: blue;
 }
+
+img {
+  position: absolute;
+}
+
+div#canvasContainer {
+  position: relative;
+  float: left;
+}
+
+canvas#canvas0 {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 0;
+}
+
+canvas#canvas1 {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 1;
+}
