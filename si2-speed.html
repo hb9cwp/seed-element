@@ -1,21 +1,20 @@
 <link rel="import" href="./bower_components/polymer/polymer.html">
 
-<polymer-element name="si2-speed" attributes="width height background color speed webClients author">
+<polymer-element name="si2-speed" attributes="width height speed">
 
   <template>
     <link rel="stylesheet" href="si2-speed.css">
 
     <h2>Hello from speed</h2>
     <p>Air speed is <strong>{{speed}}</strong> kts</p>
-    <p><strong>{{webClients}}</strong> Web clients are connected.</p>
-    
-    <content></content>
 
     <div id="canvasContainer">
       <!-- <canvas id="canvasID" class="canvasClass" width="{{width}}" height="{{height}}"></canvas> -->
       <canvas id="canvas0" width="{{width}}" height="{{height}}"></canvas>
       <canvas id="canvas1" width="{{width}}" height="{{height}}"></canvas>
     </div>
+
+    <content></content>
 
   </template>
 
@@ -24,22 +23,29 @@
     Polymer({
       width: 300,
       height: 300,
-      background: 'white',
-      color: 'black',
       speed: 0,
-      webClients: 0,
+
       author: 'Rolf Sommerhalder',
-      
-      ctx1: null,
-      hand: null,
       
       min: 0,
       max: 0,
       angles: [],
 
-      // on read, not on created, unlike shown in some examples!
+      created: function() {
+        // interpolation etc. 
+        setup(this);
+      },
+      
+      ctx1: null,
+      hand: null,
+      
+      // on ready, not on created, unlike shown in some examples!
       ready: function () {
         var that= this
+        
+        // interpolation etc. 
+        //setup(this);
+
         // using label ID
         var canvas0 = this.$.canvas0;
         var canvas1 = this.$.canvas1;
@@ -52,42 +58,69 @@
         that.hand= new Image()
         
         dial.onload = function(){
-          //ctx0.drawImage(dial,0,0,dial.width,dial.height);
-          //ctx0.drawImage(dial,0,0);
           ctx0.drawImage(dial,0,0,that.width,that.height);  // scale to canvas size
         }
         dial.src= "speed.png"
         
         that.hand.onload = function() {
-          // 1. Move context to the center point of rotation (defaults to upper left (0,0)).
-          that.ctx1.translate(that.hand.width/2, that.hand.height/2);
-          // 2. Rotate
-          that.ctx1.rotate((0*Math.PI/180));
-          // 3. Move back with negative offsets, and draw
-          //that.ctx1.drawImage(that.hand,-that.hand.width/2,-that.hand.height/2,that.hand.width,that.hand.height);
-          that.ctx1.drawImage(that.hand,-that.hand.width/2,-that.hand.height/2,that.width,that.height); // scale to canvas size
+          /* Variant A: save/restore */
+            // 0. save context, e.g. offset etc.
+            that.ctx1.save()
+            // 1. Move context to the center point of rotation (defaults to upper left (0,0)).
+            that.ctx1.translate(that.width/2, that.height/2)
+            // 2. Rotate around center point (axle of hand)
+            that.ctx1.rotate(that.angles[that.speed]*(Math.PI/180))
+            // 3. draw with negative offsets
+            that.ctx1.drawImage(that.hand,-that.width/2,-that.height/2,that.width,that.height); // scale to canvas size
+            // 4. restore context for next rotation, as offset is still translated
+            that.ctx1.restore()
+          /* Variant B: translate forth and back, without save/restore */
+            /*
+            // 1. Move context to the center point of rotation (defaults to upper left (0,0)).
+            that.ctx1.translate(that.width/2, that.height/2)
+            // 2. Rotate around center point (axle of hand)
+            that.ctx1.rotate(that.angles[that.speed]*(Math.PI/180))
+            // 3. translate offset back
+            that.ctx1.translate(-that.width/2, -that.height/2)
+            // 4. draw at (0,0)
+            that.ctx1.drawImage(that.hand,0,0,that.width,that.height) // scale to canvas size
+            */
         }
         that.hand.src= "speed-dial.png"
-        
-        // interpolation etc. 
-        setup(this);
       },
-      /*
-      speedChange: function (speed) {
-        that.ctx1.clearRect(0, 0, canvasWidth, canvasHeight);
-        that.ctx1.translate(that.hand.width/2, that.hand.height/2);
-        that.ctx1.rotate((speed*Math.PI/180));
-        that.ctx1.drawImage(that.hand,-that.hand.width/2,-that.hand.height/2,that.hand.width,that.hand.height);
+      
+      speedChanged: function () {
+			  var speed = Math.round(this.speed)
+    		if (speed < this.min) {
+    			speed = this.min
+    		} else if (speed > this.max) {
+    			speed = this.max
+    		}
+        this.ctx1.clearRect(0, 0, this.width, this.height);
+        /* Variant A: save/restore */
+          this.ctx1.save()
+          this.ctx1.translate(this.width/2, this.height/2)
+          this.ctx1.rotate(this.angles[speed]*(Math.PI/180))
+          this.ctx1.drawImage(this.hand,-this.width/2,-this.height/2,this.width,this.height)  // scale to canvas size
+          this.ctx1.restore()
+        /* Variant B: translate forth and back, without save/restore
+          Note: B fails as rotations of canvas cumulate without the restore! */
+          /*
+          this.ctx1.translate(this.width/2, this.height/2)
+          this.ctx1.rotate(this.angles[speed]*(Math.PI/180))
+          this.ctx1.translate(-this.width/2, -this.height/2)
+          this.ctx1.drawImage(this.hand,0,0,this.width,this.height)  // scale to canvas size
+          */
       }
-      */
+      
       
     });
     
     function setup(that) {
-      // from
+      // from (scale modified for Si2)
       //  https://github.com/dmolin/flightSimPanels/blob/master/src/services/measures/speed/client/speed.js
-      console.log("setup() started...")
-      
+
+      //console.log("setup() started...")
       var interp = {
         "0": 0.01,
         "5": 31,

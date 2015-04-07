@@ -9,10 +9,6 @@ polyfill-next-selector { content: ':host > h2'; }
   color: blue;
 }
 
-img {
-  position: absolute;
-}
-
 div#canvasContainer {
   position: relative;
   float: left;
